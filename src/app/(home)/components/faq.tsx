@@ -25,8 +25,10 @@ const FAQ = () => {
           {mokeData?.map((data) => {
             return (
               <AccordionItem
+              
                 value={data.answer}
                 className="p-4 mx-4 shadow-md transform transition duration-500 hover:scale-105 h-auto px-3"
+                key={data.id}
               >
                 <AccordionTrigger>{data.question}</AccordionTrigger>
                 <AccordionContent> {data.answer} </AccordionContent>
