@@ -36,7 +36,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { UploadDropzone } from "@/lib/uploadthing";
 import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +44,7 @@ import { courts, languages, lawyerSpecialties } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Account } from "@/server/user-management/account";
 import { signIn } from "next-auth/react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -112,7 +113,7 @@ const SignUpForm = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (values.password !== values.confirm) {
       form.setError("confirm", {
-        message: "Password dont match",
+        message: "Password don't match!",
       });
       return;
     }
@@ -134,18 +135,15 @@ const SignUpForm = () => {
             router.refresh();
             setRegisteringUser(false);
           },
-          onError: async (err) => {
+          onError: async (err: unknown) => {
+            const error = err as AxiosError<{ error: string }>;
+            const errorMessage = error.response?.data?.error || error.message;
+          
             toast({
               title: "Couldn't create account",
-              description:
-                //@ts-ignore
-                err.response && err.response.data.error
-                  ? //@ts-ignore
-                    err.response.data.error
-                  : err.message,
+              description: errorMessage,
               variant: "destructive",
             });
-            setRegisteringUser(false);
           },
         }
       );
@@ -186,7 +184,7 @@ const SignUpForm = () => {
           },
           onError: async (e) => {
             toast({
-              title: "Couldn't create account",
+              title: "Couldn't create account!",
               description: e.message,
             });
             setRegisteringUser(false);
@@ -215,14 +213,14 @@ const SignUpForm = () => {
                 className=" space-y-3 lg:flex gap-3 items-start "
               >
                 {form.watch("type") == "lawyer" && (
-                  <ScrollArea>
-                    <div>
-                      <div>
-                        <div>
+                  <ScrollArea className=" h-[80vh] p-3 rounded-md border">
+                    <div className=" flex flex-col gap-8 ">
+                      <div className=" flex gap-3 lg:flex-row flex-col ">
+                        <div className="space-y-2 lg:w-[300px]">
                           <Label>Identification Card</Label>
                           {!id ? (
                             <UploadDropzone
-                              className=""
+                              className=" p-2 border border-gray-600 "
                               endpoint="fileUploader"
                               onClientUploadComplete={(res) => {
                                 setId(res[0].url);
@@ -232,7 +230,7 @@ const SignUpForm = () => {
                               }}
                             />
                           ) : (
-                            <div>
+                            <div className=" flex flex-col ">
                               <Image
                                 src={id}
                                 width={200}
@@ -252,11 +250,11 @@ const SignUpForm = () => {
                             </div>
                           )}
                         </div>
-                        <div>
+                        <div className=" space-y-2 lg:w-[300px]">
                           <Label>Qualification</Label>
                           {!qualification ? (
                             <UploadDropzone
-                              className=""
+                              className=" p-2 border border-gray-600 "
                               endpoint="fileUploader"
                               onClientUploadComplete={(res) => {
                                 setQualification(res[0].url);
@@ -266,7 +264,7 @@ const SignUpForm = () => {
                               }}
                             />
                           ) : (
-                            <div>
+                            <div className=" flex flex-col ">
                               <Image
                                 src={qualification}
                                 width={200}
@@ -287,8 +285,8 @@ const SignUpForm = () => {
                           )}
                         </div>
                       </div>
-                      <div>
-                        <div>
+                      <div className=" flex gap-3 lg:flex-row flex-col ">
+                        <div className=" space-y-2 lg:w-[300px] ">
                           <Label>CV</Label>
                           {!cv ? (
                             <UploadDropzone
@@ -322,7 +320,7 @@ const SignUpForm = () => {
                             </div>
                           )}
                         </div>
-                        <div>
+                        <div className=" space-y-2 lg:w-[300px] ">
                           <Label>Resume</Label>
                           {!resume ? (
                             <UploadDropzone
@@ -357,8 +355,8 @@ const SignUpForm = () => {
                           )}
                         </div>
                       </div>
-                      <div>
-                        <div>
+                      <div className=" flex gap-3 lg:flex-row flex-col ">
+                        <div className=" space-y-2 lg:w-[300px] ">
                           <Label>Photo</Label>
                           {!photo ? (
                             <UploadDropzone
@@ -412,8 +410,10 @@ const SignUpForm = () => {
                       name="languages"
                       render={() => (
                         <FormItem>
-                          <div>
-                            <FormLabel>Languages</FormLabel>
+                          <div className="my-4">
+                            <FormLabel className="text-base">
+                              Languages
+                            </FormLabel>
                             <FormDescription>
                               Select the language you speak
                             </FormDescription>
@@ -574,7 +574,7 @@ const SignUpForm = () => {
                   </ScrollArea>
                 )}
               </form>
-              <div>
+              <div className=" space-y-3 ">
                 <FormField
                   control={form.control}
                   name="email"
@@ -663,9 +663,24 @@ const SignUpForm = () => {
                     </FormItem>
                   )}
                 />
-                <Button>Create</Button>
-                <p>Already have an account?</p>
-                <Button>
+                <Button
+                  disabled={
+                    registeringUser ||
+                    (form.watch("type") == "lawyer" &&
+                      (!id || !qualification || !photo))
+                  }
+                  type="submit"
+                  className=" w-full "
+                >
+                  {registeringUser && (
+                    <Loader2 className=" mr-1 h-4 w-4 animate-spin " />
+                  )}
+                  Create
+                </Button>
+                <p className=" text-center text-sm ">
+                  Already have an account?
+                </p>
+                <Button asChild className="w-full" variant="outline" >
                   <Link href={"/signin"}>Sign In</Link>
                 </Button>
               </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { ToastContainer, toast } from "react-toastify";
 import {
   Accordion,
@@ -8,8 +10,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import mokeData from "./FAQMokeData";
+import {
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useState } from "react";
 
 const FAQ = () => {
+  const queryClient = useQueryClient();
+  const [question, setQuestion] = useState();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["faqs"],
+    queryFn: () => getAnsweredFaqs(),
+  });
+
+  const mutationFn = async (data: string) => {
+    return askFaq(data);
+  };
+
+  const { mutateAsync }: UseMutationResult<void, unknown, string> = useMutation(
+    {
+      mutationFn,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["faqs"] });
+        setQuestion("");
+        toast.success("Question submitted successfully");
+      },
+      onError: (error: any) => {
+        toast.error("Failed to submit the question.");
+      },
+    }
+  );
+
+  const handleChange = (e: any) => {
+    setQuestion(e.target.value);
+  };
+
+  const handleSubmit = (e: any) => {
+    setQuestion(e.target.value);
+  };
+
   return (
     <>
       <div className="p-8 flex flex-col">
@@ -25,7 +68,6 @@ const FAQ = () => {
           {mokeData?.map((data) => {
             return (
               <AccordionItem
-              
                 value={data.answer}
                 className="p-4 mx-4 shadow-md transform transition duration-500 hover:scale-105 h-auto px-3"
                 key={data.id}
@@ -42,8 +84,14 @@ const FAQ = () => {
             Ask questions, gain clarity, and empower your legal journey with us
             ...
           </h3>
-          <Textarea placeholder="Type your question here." />
-          <Button></Button>
+          <Textarea
+            onChange={handleChange}
+            value={question}
+            placeholder="Type your question here."
+          />
+          <Button className="bg-[#7B3B99]" onClick={handleSubmit}>
+            Ask Question
+          </Button>
         </div>
         <ToastContainer />
       </div>

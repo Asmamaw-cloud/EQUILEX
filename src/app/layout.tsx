@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-
-
-
+import { ReactQueryProvider } from "./context/reactQueryProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "EQUILEX",
@@ -17,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <ReactQueryProvider>
+          <Toaster />
+          {children}
+        </ReactQueryProvider>
       </body>
     </html>
   );
