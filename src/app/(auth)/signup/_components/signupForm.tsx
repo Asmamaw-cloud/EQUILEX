@@ -42,7 +42,7 @@ import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import { courts, languages, lawyerSpecialties } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Account } from "@/server/user-management/account";
+import { Account } from "@/server/user-management/Account";
 import { signIn } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 
@@ -106,7 +106,7 @@ const SignUpForm = () => {
   });
   const createClient = useMutation({
     mutationFn: (user: any) => {
-      return axios.post("", user);
+      return axios.post("/api/clients", user);
     },
   });
 
@@ -120,7 +120,7 @@ const SignUpForm = () => {
 
     setRegisteringUser(true);
 
-    if (values.type == "client") {
+    if (values.type == "CLIENT") {
       createClient.mutate(
         {
           email: values.email,
@@ -149,7 +149,7 @@ const SignUpForm = () => {
       );
     }
 
-    if (values.type == "lawyer") {
+    if (values.type == "LAWYER") {
       createLawyer.mutate(
         {
           email: values.email,
@@ -201,7 +201,7 @@ const SignUpForm = () => {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Create Account</CardTitle>
-              <CardDescription>create new account</CardDescription>
+              <CardDescription className="text-[#919da0]">create new account</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -212,7 +212,7 @@ const SignUpForm = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className=" space-y-3 lg:flex gap-3 items-start "
               >
-                {form.watch("type") == "lawyer" && (
+                {form.watch("type") == "LAWYER" && (
                   <ScrollArea className=" h-[80vh] p-3 rounded-md border">
                     <div className=" flex flex-col gap-8 ">
                       <div className=" flex gap-3 lg:flex-row flex-col ">
@@ -431,7 +431,7 @@ const SignUpForm = () => {
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(
+                                        checked={Array.isArray(field.value) &&field.value?.includes(
                                           language.value
                                         )}
                                         onCheckedChange={(checked: any) => {
@@ -487,7 +487,7 @@ const SignUpForm = () => {
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(
+                                        checked={Array.isArray(field.value) &&field.value?.includes(
                                           specialty.value
                                         )}
                                         onCheckedChange={(checked: any) => {
@@ -541,7 +541,7 @@ const SignUpForm = () => {
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(
+                                        checked={Array.isArray(field.value) &&field.value?.includes(
                                           court.value
                                         )}
                                         onCheckedChange={(checked: any) => {
@@ -582,7 +582,7 @@ const SignUpForm = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} className="lg:w-[400px]" />
+                        <Input {...field} value={field.value ?? ''} className="lg:w-[400px]" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -630,8 +630,8 @@ const SignUpForm = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value={"lawyer"}>Lawyer</SelectItem>
-                          <SelectItem value={"client"}>Client</SelectItem>
+                          <SelectItem value={"LAWYER"}>Lawyer</SelectItem>
+                          <SelectItem value={"CLIENT"}>Client</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormItem>
@@ -666,11 +666,11 @@ const SignUpForm = () => {
                 <Button
                   disabled={
                     registeringUser ||
-                    (form.watch("type") == "lawyer" &&
+                    (form.watch("type") == "LAWYER" &&
                       (!id || !qualification || !photo))
                   }
                   type="submit"
-                  className=" w-full "
+                  className=" w-full"
                 >
                   {registeringUser && (
                     <Loader2 className=" mr-1 h-4 w-4 animate-spin " />

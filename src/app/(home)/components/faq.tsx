@@ -89,7 +89,7 @@ const FAQ = () => {
             value={question}
             placeholder="Type your question here."
           />
-          <Button className="bg-[#7B3B99]" onClick={handleSubmit}>
+          <Button className="bg-[#7B3B99] text-[#e9f5f9]" onClick={handleSubmit}>
             Ask Question
           </Button>
         </div>
